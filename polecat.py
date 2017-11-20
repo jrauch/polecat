@@ -38,7 +38,7 @@ class SearchAccount():
 
 	def search(self, query):
 		myquery = self.search_query.format(self.acct, query)
-		sleeper=16
+		sleeper=31
 		while sleeper != 0:
 			r = requests.get(self.base_url+myquery, auth=(self.user, self.passwd))
 			rjson = r.json()
