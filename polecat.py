@@ -62,7 +62,7 @@ class SearchAccount():
 		#	print(result)
 		return results
 
-scan_list = ["AWS_ACCESS_KEY_ID","AWS_SECRET_ACCESS_KEY", "AKIA"]
+scan_list = ["AWS_ACCESS_KEY_ID","AWS_SECRET_ACCESS_KEY", "AKIA", "ASIA"]
 
 if __name__ == "__main__":
 	(user, passwd) = open(os.path.expanduser('~')+"/.gitcred").read().strip().split(":")
