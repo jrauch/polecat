@@ -28,7 +28,7 @@ class ScanOrg():
 			return self.user_handle.get_members()
 
 class SearchAccount():
-	def __init__(self, user, passwd, acct=None, org=None, base_url="https://api.github.com",search_query="/search/code?q=user:{}+{}"):
+	def __init__(self, user, passwd, acct=None, org=None, base_url="https://api.github.com",search_query="/search/code?q={}:{}+{}"):
 		self.user = user
 		self.passwd = passwd
 		self.acct=acct
@@ -37,7 +37,11 @@ class SearchAccount():
 		self.search_query=search_query
 
 	def search(self, query):
-		myquery = self.search_query.format(self.acct, query)
+		if(self.acct):
+			myquery = self.search_query.format("user", self.acct, query)
+		else:
+			myquery = self.search_query.format("org", self.org, query)
+
 		sleeper=31
 		while sleeper != 0:
 			r = requests.get(self.base_url+myquery, auth=(self.user, self.passwd))
@@ -58,6 +62,7 @@ class SearchAccount():
 		#	print(result)
 		return results
 
+scan_list = ["AWS_ACCESS_KEY_ID","AWS_SECRET_ACCESS_KEY", "AKIA"]
 
 if __name__ == "__main__":
 	(user, passwd) = open(os.path.expanduser('~')+"/.gitcred").read().strip().split(":")
@@ -65,11 +70,15 @@ if __name__ == "__main__":
 	members = org.get_members()
 	r=set()
 
+	s=SearchAccount(user, passwd, org=sys.argv[1])
+	for term in scan_list:
+		r = r.union(s.search(term))
+
 	for member in members:
 		print(member.login)
 		s=SearchAccount(user, passwd, acct=str(member.login))
-		r = r.union(s.search("AWS_ACCESS_KEY_ID"))
-		r = r.union(s.search("AWS_SECRET_ACCESS_KEY"))
+		for term in scan_list:
+			r = r.union(s.search(term))
 
 	for result in r:
 		print(result)
