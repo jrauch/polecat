@@ -6,6 +6,9 @@ import time
 import copy
 import requests
 import time
+import re
+from jinja2 import Environment, PackageLoader, select_autoescape
+from collections import OrderedDict
 
 reload(sys)
 sys.setdefaultencoding("ISO-8859-1")
@@ -13,7 +16,6 @@ sys.setdefaultencoding("ISO-8859-1")
 class ScanOrg():
 	def __init__(self, user, passwd, acct=None, org=None, base_url="https://api.github.com"):
 		self.github = Github(user, passwd, base_url=base_url)
-		#self.repo_owner = repo_owner
 		self.user_handle = None
 		self.organization_handle = None
 		if acct:
@@ -28,15 +30,18 @@ class ScanOrg():
 			return self.user_handle.get_members()
 
 class SearchAccount():
-	def __init__(self, user, passwd, acct=None, org=None, base_url="https://api.github.com",search_query="/search/code?q={}:{}+{}"):
+	def __init__(self, user, passwd, acct=None, org=None, base_url="https://api.github.com",search_query="/search/code?q={}:{}+{}", 
+		headers={"Accept":"application/vnd.github.v3.text-match+json"}):
+
 		self.user = user
 		self.passwd = passwd
 		self.acct=acct
 		self.org=org
 		self.base_url = "https://api.github.com"
 		self.search_query=search_query
+		self.headers = headers
 
-	def search(self, query):
+	def search(self, query, sre=""):
 		if(self.acct):
 			myquery = self.search_query.format("user", self.acct, query)
 		else:
@@ -44,41 +49,52 @@ class SearchAccount():
 
 		sleeper=31
 		while sleeper != 0:
-			r = requests.get(self.base_url+myquery, auth=(self.user, self.passwd))
+			r = requests.get(self.base_url+myquery, auth=(self.user, self.passwd), headers=self.headers)
 			rjson = r.json()
 			if "message" in rjson and "API rate limit exceeded" in rjson["message"]:
 				sleeper += sleeper
-				print("(resting)")
+				#print("(resting)")
 				time.sleep(sleeper)
 			else:
 				sleeper = 0
 
-		results = set()
+		results = []
 
 		if "total_count" in rjson and rjson["total_count"] != 0:
 			for items in rjson["items"]:
-				results.add("Found '{}' in {}".format(query, items["html_url"])) 
-		#for result in results:
-		#	print(result)
+				if "text_matches" in items:
+					for matches in items["text_matches"]:
+						if re.search(sre, matches["fragment"]):
+							results.append({"query": query, "url": items["html_url"], "fragment": matches["fragment"]}) 
 		return results
 
-scan_list = ["AWS_ACCESS_KEY_ID","AWS_SECRET_ACCESS_KEY", "AKIA", "ASIA"]
+class Report():
+	def __init__(self):
+		self.env=Environment(loader=PackageLoader("polecat", "reports"),
+							autoescape=select_autoescape(["html", "xml"]))
+
+	def generate_report(self, template, results):
+		tc = self.env.get_template(template)
+		return tc.render(report_data=results)
+
+scan_list = {"AWS_ACCESS_KEY_ID":"AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY":"AWS_SECRET_ACCESS_KEY", "AKIA":r"A.IA[A-Z0-9]{16}", "ASIA":r"A.IA[A-Z0-9]{16}"}
 
 if __name__ == "__main__":
 	(user, passwd) = open(os.path.expanduser('~')+"/.gitcred").read().strip().split(":")
 	org = ScanOrg(user, passwd, org=sys.argv[1])
 	members = org.get_members()
-	r=set()
+	r = OrderedDict()
 
 	s=SearchAccount(user, passwd, org=sys.argv[1])
-	for term in scan_list:
-		r = r.union(s.search(term))
+	r[sys.argv[1]] = []
+	for term, sre in scan_list.items():
+		r[sys.argv[1]] += s.search(term, sre)
 
 	for member in members:
-		print(member.login)
+		r[member.login] = []
 		s=SearchAccount(user, passwd, acct=str(member.login))
-		for term in scan_list:
-			r = r.union(s.search(term))
+		for term, sre in scan_list.items():
+			r[member.login] = r[member.login] + s.search(term, sre)
 
-	for result in r:
-		print(result)
+	reporter = Report()
+	print(reporter.generate_report("template.html", results=r))

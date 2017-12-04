@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Polecat report for </title>
+    <style>
+    tr:nth-child(even) {background: #CCC}
+	tr:nth-child(odd) {background: #FFF}
+	h4 {margin-top: 10px;margin-bottom: 0px;}
+	table {width: 90%;}
+	.filec {width: 200px;}
+	.commit {width: 100px;}
+	.subc {font-style: italic; margin-top: 0px; margin-bottom: 0px;}
+    </style>
+</head>
+<body>
+{%- if report_data|length > 0 -%}
+	{%- for entity, list in report_data.items() -%}
+	{%- if list|length > 0-%}
+	<h2> Polecat report for {{entity}}</h2>
+		<table>
+		{%- for line in list -%}
+			<tr>
+			<td>{{line["query"]}}</td>
+			<td>{{line["url"]}}</td>
+			<td>{{line["fragment"]}}</td>
+			</tr>
+		{%- endfor -%}
+		</table>
+	{%- endif -%}
+	{%- endfor -%}
+{%- endif -%}
+</body>
