@@ -7,6 +7,7 @@ import copy
 import requests
 import time
 import re
+#from ipdb import set_trace
 from jinja2 import Environment, PackageLoader, select_autoescape
 from collections import OrderedDict
 
@@ -64,6 +65,7 @@ class SearchAccount():
 			for items in rjson["items"]:
 				if "text_matches" in items:
 					for matches in items["text_matches"]:
+						#set_trace()
 						if re.search(sre, matches["fragment"]):
 							results.append({"query": query, "url": items["html_url"], "fragment": matches["fragment"]}) 
 		return results

@@ -21,7 +21,7 @@
 		{%- for line in list -%}
 			<tr>
 			<td>{{line["query"]}}</td>
-			<td>{{line["url"]}}</td>
+			<td><a href="{{line["url"]}}">{{line["url"]}}</a></td>
 			<td>{{line["fragment"]}}</td>
 			</tr>
 		{%- endfor -%}
