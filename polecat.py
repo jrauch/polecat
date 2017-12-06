@@ -13,9 +13,6 @@ import re
 from jinja2 import Environment, PackageLoader, select_autoescape
 from collections import OrderedDict
 
-reload(sys)
-sys.setdefaultencoding("ISO-8859-1")
-
 class ScanOrg():
 	def __init__(self, user, passwd, acct=None, org=None, base_url="https://api.github.com"):
 		self.github = Github(user, passwd, base_url=base_url)
