@@ -78,8 +78,8 @@ class Report():
 		tc = self.env.get_template(template)
 		return tc.render(report_data=results)
 
-scan_list = {"AWS_ACCESS_KEY_ID":"AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY":"AWS_SECRET_ACCESS_KEY", "AKIA":r"A.IA[A-Z0-9]{16}", "ASIA":r"A.IA[A-Z0-9]{16}",
-"-----BEGIN .* PRIVATE KEY-----":"-----BEGIN .* PRIVATE KEY-----"}
+scan_list = {"AWS_ACCESS_KEY_ID":r"(?i)AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY":"(?i)AWS_SECRET_ACCESS_KEY",
+"-----BEGIN":"-----BEGIN .* PRIVATE KEY-----"}
 
 if __name__ == "__main__":
 	(user, passwd) = open(os.path.expanduser('~')+"/.gitcred").read().strip().split(":")
