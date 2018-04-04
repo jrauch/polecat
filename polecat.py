@@ -79,7 +79,7 @@ class Report():
 		return tc.render(report_data=results)
 
 scan_list = {"AWS_ACCESS_KEY_ID":r"(?i)AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY":"(?i)AWS_SECRET_ACCESS_KEY",
-"KEY-----":"BEGIN.*PRIVATE"}
+"KEY-----":"BEGIN.*PRIVATE", "PrivateKey":"PrivateKey", "ConsumerSecret":"ConsumerSecret","passwd":"(?i)passwd","password":"(?i)password"}
 
 if __name__ == "__main__":
 	(user, passwd) = open(os.path.expanduser('~')+"/.gitcred").read().strip().split(":")
