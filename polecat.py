@@ -99,4 +99,4 @@ if __name__ == "__main__":
 			r[member.login] = r[member.login] + s.search(term, sre)
 
 	reporter = Report()
-	print(reporter.generate_report("template.html", results=r))
+	print(reporter.generate_report("template.html", results=r).encode('utf-8'))
